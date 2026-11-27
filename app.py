@@ -1,5 +1,5 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+﻿from fastapi import FastAPI
+from pydantic import BaseModel, Field
 import joblib
 from fastapi.responses import FileResponse
 from pathlib import Path
@@ -7,7 +7,7 @@ from pathlib import Path
 # Directorio del proyecto
 BASE_DIR = Path(__file__).resolve().parent
 
-# Crear la aplicación
+# Crear la aplicaciÃ³n
 app = FastAPI(title="Proyecto Olaf - Modelo Iris")
 
 # Cargar el modelo entrenado
@@ -15,20 +15,19 @@ artifact = joblib.load(BASE_DIR / "iris_model.pkl")
 model = artifact["model"]
 target_names = artifact["target_names"]
 
-# Datos que recibirá la API
+# Datos que recibirÃ¡ la API
 class Flower(BaseModel):
-    sepal_length: float
-    sepal_width: float
-    petal_length: float
-    petal_width: float
+    sepal_length: float = Field(gt=0)
+    sepal_width: float = Field(gt=0)
+    petal_length: float = Field(gt=0)
+    petal_width: float = Field(gt=0)
 
-# Ruta principal
+# Ruta principal: mostrar interfaz web
 @app.get("/")
 def home():
-    return {
-        "mensaje": "Bienvenido a Proyecto Olaf",
-        "estado": "API funcionando"
-    }
+    archivo = BASE_DIR / "index.html"
+    return FileResponse(archivo)
+
 @app.get("/healthz")
 def health_check():
     return {
@@ -52,8 +51,9 @@ def predict(flower: Flower):
         "prediccion": target_names[int(prediction)]
     }
 
-# Página web
+# PÃ¡gina web
 @app.get("/web")
 def pagina_web():
     archivo = BASE_DIR / "index.html"
     return FileResponse(archivo)
+
