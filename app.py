@@ -4,15 +4,18 @@ import joblib
 from fastapi.responses import FileResponse
 from pathlib import Path
 
+# Directorio del proyecto
+BASE_DIR = Path(__file__).resolve().parent
+
 # Crear la aplicación
 app = FastAPI(title="Proyecto Olaf - Modelo Iris")
 
 # Cargar el modelo entrenado
-artifact = joblib.load("iris_model.pkl")
+artifact = joblib.load(BASE_DIR / "iris_model.pkl")
 model = artifact["model"]
 target_names = artifact["target_names"]
 
-# Definir los datos que recibirá la API
+# Datos que recibirá la API
 class Flower(BaseModel):
     sepal_length: float
     sepal_width: float
@@ -26,8 +29,14 @@ def home():
         "mensaje": "Bienvenido a Proyecto Olaf",
         "estado": "API funcionando"
     }
+@app.get("/healthz")
+def health_check():
+    return {
+        "estado": "ok",
+        "mensaje": "API funcionando correctamente"
+    }
 
-# Ruta para realizar predicciones
+# Predicciones
 @app.post("/predict")
 def predict(flower: Flower):
     data = [[
@@ -43,7 +52,8 @@ def predict(flower: Flower):
         "prediccion": target_names[int(prediction)]
     }
 
+# Página web
 @app.get("/web")
 def pagina_web():
-    archivo = Path(__file__).parent / "index.html"
+    archivo = BASE_DIR / "index.html"
     return FileResponse(archivo)
